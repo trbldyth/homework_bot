@@ -72,7 +72,7 @@ def get_api_answer(timestamp):
 
 
 def check_response(response):
-    """Проверяет ответ API на корректность."""
+    """Проверяет ответ API на корректность"""
     logger.info("API check")
     if not isinstance(response, dict):
         message = (f"API returns answer like {type(response)}, "
@@ -105,13 +105,13 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """Проверяет доступность переменных окружения."""
+    """Проверяет доступность переменных окружения"""
     logger.info("Проверка доступности переменных окружения")
     return all([TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def main():
-    """Основная логика работы бота."""
+    """Основная логика работы бота"""
     if not check_tokens():
         message = ("Доступны не все переменные окружения, которые "
                    "необходимы для работы программы: "
