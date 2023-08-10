@@ -39,10 +39,12 @@ logger.addHandler(fileHandler)
 
 
 class APIError(Exception):
+    """API Exception"""
     pass
 
 
 class HTTPRequestError(Exception):
+    """HTTP Exception"""
     pass
 
 
