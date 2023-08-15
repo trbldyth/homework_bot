@@ -39,17 +39,17 @@ logger.addHandler(fileHandler)
 
 
 class APIError(Exception):
-    """API Exception"""
+    """Исключение в API"""
     pass
 
 
 class HTTPRequestError(Exception):
-    """HTTP Exception"""
+    """Исключение в HTTP"""
     pass
 
 
 def send_message(bot, message):
-    """Func that sending messages"""
+    """Функция для отправки сообщений"""
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
     except telegram.error.TelegramError as error:
@@ -58,7 +58,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(timestamp):
-    """Func that getting answer by API"""
+    """Функция,получающая ответ от API"""
     params = {'from_date': timestamp}
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
@@ -92,15 +92,15 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """Checking homework status"""
+    """Функция проверки статуса домашней работы"""
     if "homework_name" not in homework:
         raise KeyError(f'There is no expected key in {homework}')
     status = homework['status']
     homework_name = homework['homework_name']
     if status not in HOMEWORK_VERDICTS:
         raise ValueError(f'Not expected status:{status}')
-    message = (f'Изменился статус проверки '
-               f'работы "{homework_name}",{HOMEWORK_VERDICTS[status]}')
+    message = (f'Status check changed: '
+               f'"{homework_name}",{HOMEWORK_VERDICTS[status]}')
     return message
 
 
@@ -131,10 +131,10 @@ def main():
                 message = parse_status(homework[0])
                 send_message(bot, message)
             else:
-                logger.debug("В ответе API отсутсвуют новые статусы")
+                logger.debug("There is no new statuses")
             current_timestamp = int(time.time())
         except Exception as error:
-            message_error = f'Сбой в работе программы: {error}'
+            message_error = f'Program Error: {error}'
             logger.error(message_error)
             if not issubclass(error.__class__, Error):
                 if message_error != previous_message_error:
