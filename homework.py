@@ -39,17 +39,17 @@ logger.addHandler(fileHandler)
 
 
 class APIError(Exception):
-    """Исключение в API"""
+    """ Исключение в API """
     pass
 
 
 class HTTPRequestError(Exception):
-    """Исключение в HTTP"""
+    """ Исключение в HTTP """
     pass
 
 
 def send_message(bot, message):
-    """Функция для отправки сообщений"""
+    """ Функция для отправки сообщений """
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
     except telegram.error.TelegramError as error:
@@ -58,7 +58,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(timestamp):
-    """Функция,получающая ответ от API"""
+    """ Функция,получающая ответ от API """
     params = {'from_date': timestamp}
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
@@ -72,7 +72,7 @@ def get_api_answer(timestamp):
 
 
 def check_response(response):
-    """Проверяет ответ API на корректность"""
+    """ Проверяет ответ API на корректность """
     logger.info("API check")
     if not isinstance(response, dict):
         message = (f"API returns answer like {type(response)}, "
@@ -92,7 +92,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """Функция проверки статуса домашней работы"""
+    """ Функция проверки статуса домашней работы """
     if "homework_name" not in homework:
         raise KeyError(f'There is no expected key in {homework}')
     status = homework['status']
@@ -105,13 +105,13 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """Проверяет доступность переменных окружения"""
+    """ Проверяет доступность переменных окружения """
     logger.info("Проверка доступности переменных окружения")
     return all([TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def main():
-    """Основная логика работы бота"""
+    """ Основная логика работы бота """
     if not check_tokens():
         message = ("Доступны не все переменные окружения, которые "
                    "необходимы для работы программы: "
