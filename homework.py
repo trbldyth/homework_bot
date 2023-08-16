@@ -39,37 +39,37 @@ logger.addHandler(fileHandler)
 
 
 class APIError(Exception):
-    """Исключение в API."""
+    """API Exception."""
 
     pass
 
 
 class HTTPRequestError(Exception):
-    """Исключение в HTTP."""
+    """HTTP Exception."""
 
     pass
 
 
 def send_message(bot, message):
-    """Функция для отправки сообщений."""
+    """Функция отправки сообщений."""
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
     except telegram.error.TelegramError as error:
         logger.error(f'There is an exception: {error}')
-    logging.debug('Message was sent!')
+    logging.debug('Сообщение отправлено!')
 
 
 def get_api_answer(timestamp):
-    """Функция,получающая ответ от API."""
+    """Получает ответ от API."""
     params = {'from_date': timestamp}
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
     except Exception:
         logger.error('There is an error at API request')
-        raise APIError('Something wrong with API request, try again!')
+        raise APIError('Что то не так с запросом API, попробуйте снова!')
     if response.status_code != HTTPStatus.OK:
         logger.error('Endpoint isnt OK!')
-        raise HTTPRequestError('Endpoint isnt OK,try later')
+        raise HTTPRequestError('Эндроинт упал, попробуйте позже!')
     return response.json()
 
 
@@ -77,32 +77,32 @@ def check_response(response):
     """Проверяет ответ API на корректность."""
     logger.info("API check")
     if not isinstance(response, dict):
-        message = (f"API returns answer like {type(response)}, "
-                   "but need to be a dict")
+        message = (f"API вернул ответ в виде {type(response)}, "
+                   "должен быть словарь")
         raise TypeError(message)
     params = ['current_date', 'homeworks']
     for key in params:
         if key not in response:
-            message = f"There is no key {key} in API answer"
+            message = f"В ответе API нет ключа {key}"
             raise KeyError(message)
     homework = response.get('homeworks')
     if not isinstance(homework, list):
-        message = (f"API returns {type(homework)} with homeworks key, "
-                   "but need to be a list")
+        message = (f"API вернул неправильный ответ {type(homework)}, "
+                   "должен быть список")
         raise TypeError(message)
     return homework
 
 
 def parse_status(homework):
-    """Функция проверки статуса домашней работы."""
+    """Проверка статуса домашней работы."""
     if "homework_name" not in homework:
-        raise KeyError(f'There is no expected key in {homework}')
+        raise KeyError(f'Нет ожидаемового ключа {homework}')
     status = homework['status']
     homework_name = homework['homework_name']
     if status not in HOMEWORK_VERDICTS:
-        raise ValueError(f'Not expected status:{status}')
-    message = (f'Status check changed: '
-               f'"{homework_name}",{HOMEWORK_VERDICTS[status]}')
+        raise ValueError(f'Не ожидаемый статус:{status}')
+    message = (f'Изменился статус проверки '
+               f'работы "{homework_name}",{HOMEWORK_VERDICTS[status]}')
     return message
 
 
@@ -133,10 +133,10 @@ def main():
                 message = parse_status(homework[0])
                 send_message(bot, message)
             else:
-                logger.debug("There is no new statuses")
+                logger.debug("В ответе API отсутсвуют новые статусы")
             current_timestamp = int(time.time())
         except Exception as error:
-            message_error = f'Program Error: {error}'
+            message_error = f'Сбой в работе программы: {error}'
             logger.error(message_error)
             if not issubclass(error.__class__, Error):
                 if message_error != previous_message_error:
