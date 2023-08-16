@@ -40,11 +40,13 @@ logger.addHandler(fileHandler)
 
 class APIError(Exception):
     """Исключение в API."""
+
     pass
 
 
 class HTTPRequestError(Exception):
     """Исключение в HTTP."""
+
     pass
 
 
