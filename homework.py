@@ -7,7 +7,7 @@ import sys
 import requests
 from dotenv import load_dotenv
 
-from exceptions import (Error)
+from exceptions import (Error, HTTPRequestError, APIError)
 
 load_dotenv()
 
@@ -38,21 +38,10 @@ logger.addHandler(streamHandler)
 logger.addHandler(fileHandler)
 
 
-class APIError(Exception):
-    """API Exception."""
-
-    pass
-
-
-class HTTPRequestError(Exception):
-    """HTTP Exception."""
-
-    pass
-
-
 def send_message(bot, message):
     """Функция отправки сообщений."""
     try:
+        logger.info('Message start sending')
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
     except telegram.error.TelegramError as error:
         logger.error(f'There is an exception: {error}')
@@ -65,10 +54,8 @@ def get_api_answer(timestamp):
     try:
         response = requests.get(ENDPOINT, headers=HEADERS, params=params)
     except Exception:
-        logger.error('There is an error at API request')
         raise APIError('Что то не так с запросом API, попробуйте снова!')
     if response.status_code != HTTPStatus.OK:
-        logger.error('Endpoint isnt OK!')
         raise HTTPRequestError('Эндроинт упал, попробуйте позже!')
     return response.json()
 
@@ -77,19 +64,17 @@ def check_response(response):
     """Проверяет ответ API на корректность."""
     logger.info("API check")
     if not isinstance(response, dict):
-        message = (f"API вернул ответ в виде {type(response)}, "
-                   "должен быть словарь")
-        raise TypeError(message)
-    params = ['current_date', 'homeworks']
+        raise TypeError(f"API вернул ответ в виде {type(response)}, "
+                        "должен быть словарь")
+    params = ('current_date', 'homeworks')
     for key in params:
         if key not in response:
             message = f"В ответе API нет ключа {key}"
             raise KeyError(message)
     homework = response.get('homeworks')
     if not isinstance(homework, list):
-        message = (f"API вернул неправильный ответ {type(homework)}, "
-                   "должен быть список")
-        raise TypeError(message)
+        raise TypeError(f"API вернул неправильный ответ {type(homework)}, "
+                        "должен быть список")
     return homework
 
 
@@ -101,15 +86,14 @@ def parse_status(homework):
     homework_name = homework['homework_name']
     if status not in HOMEWORK_VERDICTS:
         raise ValueError(f'Не ожидаемый статус:{status}')
-    message = (f'Изменился статус проверки '
-               f'работы "{homework_name}",{HOMEWORK_VERDICTS[status]}')
-    return message
+    return (f'Изменился статус проверки '
+            f'работы "{homework_name}",{HOMEWORK_VERDICTS[status]}')
 
 
 def check_tokens():
     """Проверяет доступность переменных окружения."""
     logger.info("Проверка доступности переменных окружения")
-    return all([TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID])
+    return all((TELEGRAM_TOKEN, PRACTICUM_TOKEN, TELEGRAM_CHAT_ID))
 
 
 def main():
